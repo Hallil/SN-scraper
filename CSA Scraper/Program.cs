@@ -28,6 +28,7 @@ namespace ExamTopicsRecursiveScraper
 
                 Console.WriteLine($"\nScraping completed! Total questions found: {_questions.Count}\n");
 
+                // Change the directory to your desired output path
                 // Saving the questions to a Word document in directory
                 string outputPath = @"C:\Users\halil\Desktop\HR vragen.docx";
                 SaveQuestionsToWord(outputPath, _questions.OrderBy(q => q.QuestionNumber));
@@ -195,7 +196,8 @@ namespace ExamTopicsRecursiveScraper
 
                     // Question
                     body.AppendChild(new Paragraph(new Run(new Text($"Question: {q.QuestionText}"))));
-                    body.AppendChild(new Paragraph(new Run(new Text("")))); // Lege regel
+                    // Empty line
+                    body.AppendChild(new Paragraph(new Run(new Text(""))));
 
                     // Answer options
                     foreach (var opt in q.Options)
