@@ -116,13 +116,18 @@ File > Save As > choose .txt as the file type
 
 📘 Example Output
 Question: What is the primary purpose of the HR Service Portal?
-
 A. Allow employees to submit tickets  
 B. Automate knowledge base creation  
 C. Provide support agents with analytics  
 D. Integrate with third-party systems  
+Suggested answer: A
 
-Suggested answer: A. Allow employees to submit tickets
+Question: HR Profiles may be created for multiple employees using conditions and criteria in which module?
+A. Create Human Resources Profile
+B. Create new Case
+C. Generate HR Profiles
+D. Bulk Cases
+Suggested answer: C
 
 ❓ FAQ
 ⚠ The scraper crashes or stops?
