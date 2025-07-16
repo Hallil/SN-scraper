@@ -17,20 +17,21 @@ namespace ExamTopicsRecursiveScraper
         static async Task Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine("Start scraping ServiceNow HR examenvragen...\n");
+            Console.WriteLine("Initiating scraping of ServiceNow HR exam questions...\n");
 
             try
             {
                 int totalPages = await GetTotalPages();
-                Console.WriteLine($"Gevonden totaal aantal pagina's: {totalPages}\n");
+                Console.WriteLine($"Total number of pages found: {totalPages}\n");
 
                 await ProcessAllPages(totalPages);
 
-                Console.WriteLine($"\nScraping voltooid! Totaal gevonden vragen: {_questions.Count}\n");
+                Console.WriteLine($"\nScraping completed! Total questions found: {_questions.Count}\n");
 
+                // Saving the questions to a Word document in directory
                 string outputPath = @"C:\Users\halil\Desktop\HR vragen.docx";
                 SaveQuestionsToWord(outputPath, _questions.OrderBy(q => q.QuestionNumber));
-                Console.WriteLine($"Alle vragen en antwoorden zijn opgeslagen in: {outputPath}");
+                Console.WriteLine($"All questions and answers are stored in: {outputPath}");
             }
             catch (Exception ex)
             {
@@ -49,7 +50,8 @@ namespace ExamTopicsRecursiveScraper
                 if (parts.Length == 2 && int.TryParse(parts[1], out int total))
                     return total;
             }
-            return 127; // Fallback als paginadetectie mislukt
+            // Fallback if page detection fails
+            return 127;
         }
 
         static async Task ProcessAllPages(int totalPages)
@@ -57,7 +59,8 @@ namespace ExamTopicsRecursiveScraper
             for (int currentPage = 1; currentPage <= totalPages; currentPage++)
             {
                 await ProcessPage(currentPage);
-                await Task.Delay(2000); // Anti-DDOS delay
+                // Anti-DDOS delay
+                await Task.Delay(2000);
             }
         }
 
@@ -66,7 +69,7 @@ namespace ExamTopicsRecursiveScraper
             try
             {
                 var url = $"https://www.examtopics.com/discussions/servicenow/{pageNumber}/";
-                Console.WriteLine($"Verwerken pagina: {url}");
+                Console.WriteLine($"Processing page: {url}");
 
                 var doc = await Task.Run(() => _web.Load(url));
                 var links = GetDiscussionLinks(doc);
@@ -74,17 +77,19 @@ namespace ExamTopicsRecursiveScraper
                 foreach (var link in links)
                 {
                     ProcessDiscussion(link);
-                    await Task.Delay(500); // Extra delay tussen vragen
+                    // Additional delay between questions
+                    await Task.Delay(500);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fout op pagina {pageNumber}: {ex.Message}");
+                Console.WriteLine($"An error occurred on the page {pageNumber}: {ex.Message}");
             }
         }
 
         static List<string> GetDiscussionLinks(HtmlDocument doc)
         {
+            // Extract all discussion links that contain the specific text 'EXAM CIS-HR topic'
             return doc.DocumentNode
                 .SelectNodes("//a[contains(@href, '/discussions/servicenow/view/') and contains(text(), 'Exam CIS-HR topic')]")
                 ?.Select(a =>
@@ -111,11 +116,11 @@ namespace ExamTopicsRecursiveScraper
                 };
 
                 _questions.Add(question);
-                Console.WriteLine($"Gevonden vraag {question.QuestionNumber}");
+                Console.WriteLine($"Question found {question.QuestionNumber}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fout bij vraag {url}: {ex.Message}");
+                Console.WriteLine($"Error on question {url}: {ex.Message}");
             }
         }
 
@@ -139,7 +144,7 @@ namespace ExamTopicsRecursiveScraper
             return doc.DocumentNode
                 .SelectSingleNode("//div[contains(@class, 'question-body')]//p")
                 ?.InnerText
-                ?.Trim() ?? "Geen vraagtekst gevonden";
+                ?.Trim() ?? "No question text found";
         }
 
         static Dictionary<string, string> ExtractOptions(HtmlDocument doc)
@@ -166,7 +171,7 @@ namespace ExamTopicsRecursiveScraper
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Fout bij verwerken antwoordoptie: {ex.Message}");
+                    Console.WriteLine($"Error while processing answer option: {ex.Message}");
                 }
             }
             return options;
@@ -185,25 +190,25 @@ namespace ExamTopicsRecursiveScraper
 
                 foreach (var q in questions)
                 {
-                    if (string.IsNullOrWhiteSpace(q.QuestionText) || q.QuestionText.StartsWith("Geen vraagtekst")) continue;
+                    if (string.IsNullOrWhiteSpace(q.QuestionText) || q.QuestionText.StartsWith("No question")) continue;
                     if (q.Options == null || q.Options.Count == 0) continue;
 
-                    // Vraag
-                    body.AppendChild(new Paragraph(new Run(new Text($"Vraag: {q.QuestionText}"))));
+                    // Question
+                    body.AppendChild(new Paragraph(new Run(new Text($"Question: {q.QuestionText}"))));
                     body.AppendChild(new Paragraph(new Run(new Text("")))); // Lege regel
 
-                    // Antwoordopties
+                    // Answer options
                     foreach (var opt in q.Options)
                     {
                         var optText = $"{opt.Key}. {opt.Value}";
                         body.AppendChild(new Paragraph(new Run(new Text(optText))));
                     }
 
-                    // Link naar de discussiepagina
+                    // Link to discussion page
                     if (!string.IsNullOrWhiteSpace(q.DiscussionUrl))
-                        body.AppendChild(new Paragraph(new Run(new Text($"Bekijk deze vraag online: {q.DiscussionUrl}"))));
+                        body.AppendChild(new Paragraph(new Run(new Text($"View this question online: {q.DiscussionUrl}"))));
 
-                    // Lege regel tussen vragen
+                    // Empty line between questions
                     body.AppendChild(new Paragraph(new Run(new Text(""))));
                 }
             }
@@ -213,8 +218,8 @@ namespace ExamTopicsRecursiveScraper
     public class ExamQuestion
     {
         public int QuestionNumber { get; set; }
-        public string QuestionText { get; set; }
-        public Dictionary<string, string> Options { get; set; }
-        public string DiscussionUrl { get; set; }
+        public string? QuestionText { get; set; }
+        public Dictionary<string, string>? Options { get; set; }
+        public string? DiscussionUrl { get; set; }
     }
 }
