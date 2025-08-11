@@ -35,6 +35,8 @@ Choose a folder to save the project
 
 Click Clone
 
+Open Solution explorer on your right.
+
 3. Change Output File Path (Optional but recommended)
 In Visual Studio, open the file: Program.cs
 
